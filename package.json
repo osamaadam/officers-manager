@@ -1,0 +1,14 @@
+{
+  "name": "officers-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^7.3.0",
+    "cross-env": "^7.0.3"
+  }
+}
