@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+}
+
+model User {
+  id         Int             @id @default(autoincrement())
+  username   String          @unique
+  password   String
+  Fax        Fax[]
+  faxCreator OfficersFaxes[]
+  informer   OfficersFaxes[] @relation("informer")
+  follower   OfficersFaxes[] @relation("follower")
+}
+
+model Officer {
+  id               Int             @id @default(autoincrement())
+  name             String
+  normalizedName   String
+  aqdameya         Int?
+  repetition       Int             @default(0)
+  militaryNo       Int?
+  dofaa            String?
+  rank             String
+  weapon           String?
+  position         String?
+  unitId           Int
+  unit             Unit            @relation(fields: [unitId], references: [id])
+  birthdate        DateTime?
+  workdate         DateTime?
+  promotiondate    DateTime?
+  phone            Phone[]
+  nationalNo       String?
+  address          String
+  maritalStatus    MaritalStatus?
+  elhaa            String?
+  elhaaDescription String?
+  elhaaStartdate   DateTime?
+  elhaaEnddate     DateTime?
+  length           Int?
+  weight           Int?
+  OfficersFaxes    OfficersFaxes[]
+}
+
+model Unit {
+  id       Int       @id @default(autoincrement())
+  parentId Int?
+  parent   Unit?     @relation("taba3eya", fields: [parentId], references: [id])
+  children Unit[]    @relation("taba3eya")
+  officer  Officer[]
+}
+
+model Phone {
+  id        Int     @id @default(autoincrement())
+  number    String
+  officerId Int
+  owner     Officer @relation(fields: [officerId], references: [id])
+}
+
+model Fax {
+  id            Int             @id @default(autoincrement())
+  date          DateTime        @default(now())
+  description   String?
+  archivedate   DateTime?
+  archiverId    Int?
+  archiver      User?           @relation(fields: [archiverId], references: [id])
+  OfficersFaxes OfficersFaxes[]
+}
+
+model OfficersFaxes {
+  officerId      Int
+  officer        Officer   @relation(fields: [officerId], references: [id])
+  faxId          Int
+  fax            Fax       @relation(fields: [faxId], references: [id])
+  duedate        DateTime?
+  informdate     DateTime?
+  informerId     Int?
+  informer       User?     @relation("informer", fields: [informerId], references: [id])
+  followupdate   DateTime?
+  followupUserId Int?
+  followupUser   User?     @relation("follower", fields: [followupUserId], references: [id])
+  notes          String?
+  User           User?     @relation(fields: [userId], references: [id])
+  userId         Int?
+
+  @@id([officerId, faxId])
+}
