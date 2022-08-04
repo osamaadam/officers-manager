@@ -1,4 +1,7 @@
 {
+  "verbose": true,
   "ignore": ["dist/*", "node_modules/*"],
+  "watch": ["src/*"],
+  "ext": "ts",
   "exec": "pnpm start"
 }
