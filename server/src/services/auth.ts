@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-export const authenticate = async (
+export const authenticate = (
   req: Request,
   res: Response,
   next: NextFunction
