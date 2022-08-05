@@ -3,7 +3,7 @@ import { initFtpClient } from "../services/ftp";
 import { initPrisma } from "../services/prisma";
 import multer from "multer";
 import { DateTime } from "luxon";
-import { Readable } from "stream";
+import { Readable, Duplex } from "stream";
 import { authenticate } from "../services/auth";
 
 const router = Router();
@@ -83,6 +83,54 @@ router.post("/upload", authenticate, upload.single("fax"), async (req, res) => {
     await ftpClient.uploadFrom(faxStream, ftpFile);
 
     res.send("file uploaded successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err);
+  }
+});
+
+router.get("/download", authenticate, async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    res.status(400).send("No id provided");
+    return;
+  }
+
+  const prisma = initPrisma();
+
+  try {
+    const fax = await prisma.fax.findFirst({
+      where: {
+        id: +id,
+      },
+      select: {
+        id: true,
+        date: true,
+        description: true,
+      },
+    });
+
+    if (!fax) {
+      res.status(404).send("Fax not found");
+      return;
+    }
+
+    const ftpClient = await initFtpClient();
+
+    const ftpDir = `/ftp/faxes/${DateTime.fromJSDate(fax.date).toFormat(
+      "yyyymmdd"
+    )}`;
+
+    const ftpFile = ftpDir + `/${fax.id}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fax.id}.pdf"`
+    );
+
+    await ftpClient.downloadTo(res, ftpFile);
   } catch (err) {
     console.error(err);
     res.status(500).send(err);
