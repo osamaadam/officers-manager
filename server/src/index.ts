@@ -1,34 +1,18 @@
-import express, { json } from "express";
-import initRoutes from "./routes";
-import { initFtpClient } from "./services/ftp";
-import { resolve } from "path";
+import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
+import express, { json } from "express";
 import expressSession from "express-session";
 import passport from "passport";
 import { Strategy } from "passport-local";
+import { resolve } from "path";
+import initRoutes from "./routes";
 import { initPrisma } from "./services/prisma";
-import bcrypt from "bcrypt";
 
 import * as dotenv from "dotenv";
 dotenv.config({ path: resolve(__dirname, "..", ".env") });
 
 const main = async () => {
-  const { FTPHOST, FTPUSER, FTPPASSWORD, FTPPORT: ENVFTPPORT } = process.env;
-
-  if (!FTPHOST || !FTPUSER || !FTPPASSWORD || !ENVFTPPORT) {
-    console.error("FTPHOST, FTPUSER, FTPPASSWORD, FTPPORT are required");
-    return;
-  }
-
   const PORT = +(process.env.PORT ?? 4000);
-  const FTPPORT = +(ENVFTPPORT ?? 21);
-
-  await initFtpClient({
-    host: FTPHOST,
-    user: FTPUSER,
-    password: FTPPASSWORD,
-    port: FTPPORT,
-  });
 
   const app = express();
 

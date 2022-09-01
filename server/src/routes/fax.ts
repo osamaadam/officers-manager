@@ -1,8 +1,17 @@
 import { Router } from "express";
 import { initPrisma } from "../services/prisma";
 import { authenticate } from "../services/auth";
+import multer from "multer";
+import { resolve } from "path";
+import { Fax, OfficersFaxes } from "@prisma/client";
+import { writeFile, mkdir } from "fs/promises";
 
 const router = Router();
+
+const uploadBase = process.env.UPLOAD_BASE ?? "./uploads";
+const uploadDest = resolve(uploadBase, "fax");
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post("/create-appointments", authenticate, async (req, res) => {
   const {
@@ -149,5 +158,62 @@ router.put("/archive", authenticate, async (req, res) => {
     res.status(500).send(err);
   }
 });
+
+router.post(
+  "/insert",
+  authenticate,
+  upload.single("file"),
+  async (req, res) => {
+    const { file } = req;
+    const { faxData: fax, connections } = req.body as {
+      faxData: string;
+      connections: string;
+    };
+
+    if (!fax) return res.status(400).send("No fax data provided");
+    if (!file) return res.status(400).send("No file provided");
+
+    const user = req.user as { id: number; username: string };
+
+    const prisma = initPrisma();
+
+    try {
+      const insertedFax = await prisma.$transaction(async (p) => {
+        try {
+          const parsedFaxData: Fax = JSON.parse(fax);
+          const createdFax = await p.fax.create({
+            data: {
+              ...parsedFaxData,
+              uploaderId: user.id,
+            },
+          });
+
+          await mkdir(uploadDest, { recursive: true });
+          const faxPath = resolve(uploadDest, createdFax.id + ".pdf");
+          await writeFile(faxPath, file?.buffer);
+
+          if (connections?.length) {
+            const parsedConnections: OfficersFaxes[] = JSON.parse(connections);
+            await p.officersFaxes.createMany({
+              data: parsedConnections.map((connection) => ({
+                ...connection,
+                faxId: createdFax.id,
+                userId: user.id,
+              })),
+            });
+          }
+
+          return createdFax;
+        } catch (err) {
+          res.status(500).send(err);
+        }
+      });
+
+      res.send(insertedFax);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  }
+);
 
 export default router;

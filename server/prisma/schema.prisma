@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 datasource db {
@@ -20,10 +21,11 @@ model User {
   id         Int             @id @default(autoincrement())
   username   String          @unique
   password   String
-  Fax        Fax[]
   faxCreator OfficersFaxes[]
   informer   OfficersFaxes[] @relation("informer")
   follower   OfficersFaxes[] @relation("follower")
+  uploader   Fax[]           @relation("uploader")
+  archiver   Fax[]           @relation("archiver")
 }
 
 model Officer {
@@ -74,9 +76,11 @@ model Fax {
   id            Int             @id @default(autoincrement())
   date          DateTime        @default(now())
   description   String?
+  uploaderId    Int
+  uploader      User            @relation("uploader", fields: [uploaderId], references: [id])
   archivedate   DateTime?
   archiverId    Int?
-  archiver      User?           @relation(fields: [archiverId], references: [id])
+  archiver      User?           @relation("archiver", fields: [archiverId], references: [id])
   OfficersFaxes OfficersFaxes[]
 }
 
