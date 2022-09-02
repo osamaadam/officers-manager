@@ -92,6 +92,7 @@ model Weapon {
 
 model Unit {
   id       Int       @id @default(autoincrement())
+  name     String    @unique
   parentId Int?
   parent   Unit?     @relation("taba3eya", fields: [parentId], references: [id])
   children Unit[]    @relation("taba3eya")
@@ -103,6 +104,8 @@ model Phone {
   number    String
   officerId Int
   owner     Officer @relation(fields: [officerId], references: [id])
+
+  @@unique([officerId, number])
 }
 
 model Fax {
