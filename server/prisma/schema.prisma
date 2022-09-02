@@ -17,6 +17,25 @@ enum MaritalStatus {
   DIVORCED
 }
 
+enum ElhaaDestination {
+  WESTARMY
+  FERKA
+  PEACEKEEPING
+  HAYAKAREMA
+  OTHER
+}
+
+enum AbsenceType {
+  VACATION
+  MISSION
+  VACATIONPLUSMISSION
+  SICK
+  TRAVELING
+  DAWRAHATMEYA
+  DAWRATALEMEYA
+  OTHER
+}
+
 model User {
   id         Int             @id @default(autoincrement())
   username   String          @unique
@@ -26,35 +45,49 @@ model User {
   follower   OfficersFaxes[] @relation("follower")
   uploader   Fax[]           @relation("uploader")
   archiver   Fax[]           @relation("archiver")
+  Absence    Absence[]
 }
 
 model Officer {
-  id               Int             @id @default(autoincrement())
-  name             String
-  normalizedName   String
-  aqdameya         Int?
-  repetition       Int             @default(0)
-  militaryNo       Int?
-  dofaa            String?
-  rank             String
-  weapon           String?
-  position         String?
-  unitId           Int
-  unit             Unit            @relation(fields: [unitId], references: [id])
-  birthdate        DateTime?
-  workdate         DateTime?
-  promotiondate    DateTime?
-  phone            Phone[]
-  nationalNo       String?
-  address          String
-  maritalStatus    MaritalStatus?
-  elhaa            String?
-  elhaaDescription String?
-  elhaaStartdate   DateTime?
-  elhaaEnddate     DateTime?
-  length           Int?
-  weight           Int?
-  OfficersFaxes    OfficersFaxes[]
+  id             Int             @id @default(autoincrement())
+  name           String
+  normalizedName String
+  aqdameya       Int?
+  repetition     Int             @default(0)
+  profession     String?
+  militaryNo     Int?
+  dofaa          String?
+  rankId         Int
+  rank           Rank            @relation(fields: [rankId], references: [id])
+  weaponId       Int
+  weapon         Weapon          @relation(fields: [weaponId], references: [id])
+  unitId         Int
+  unit           Unit            @relation(fields: [unitId], references: [id])
+  birthdate      DateTime?
+  workdate       DateTime?
+  promotiondate  DateTime?
+  phone          Phone[]
+  nationalNo     String?
+  address        String?
+  maritalStatus  MaritalStatus?
+  numOfChildren  Int?
+  length         Int?
+  weight         Int?
+  OfficersFaxes  OfficersFaxes[]
+  Absence        Absence[]
+  Elhaa          Elhaa[]
+}
+
+model Rank {
+  id      Int       @id @default(autoincrement())
+  name    String    @unique
+  Officer Officer[]
+}
+
+model Weapon {
+  id      Int       @id @default(autoincrement())
+  name    String    @unique
+  Officer Officer[]
 }
 
 model Unit {
@@ -82,6 +115,8 @@ model Fax {
   archiverId    Int?
   archiver      User?           @relation("archiver", fields: [archiverId], references: [id])
   OfficersFaxes OfficersFaxes[]
+  Elhaa         Elhaa?          @relation(fields: [elhaaId], references: [id])
+  elhaaId       Int?
 }
 
 model OfficersFaxes {
@@ -101,4 +136,28 @@ model OfficersFaxes {
   userId         Int?
 
   @@id([officerId, faxId])
+}
+
+model Absence {
+  id          Int         @id @default(autoincrement())
+  absenceType AbsenceType @default(VACATION)
+  officerId   Int
+  officer     Officer     @relation(fields: [officerId], references: [id])
+  startDate   DateTime
+  endDate     DateTime?
+  notes       String?
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+}
+
+model Elhaa {
+  id          Int              @id @default(autoincrement())
+  destination ElhaaDestination
+  notes       String?
+  startdate   DateTime
+  enddate     DateTime?
+  faxId       Int?
+  fax         Fax[]
+  officerId   Int
+  Officer     Officer          @relation(fields: [officerId], references: [id])
 }
