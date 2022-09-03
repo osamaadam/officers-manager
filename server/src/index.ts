@@ -7,11 +7,13 @@ import { Strategy } from "passport-local";
 import { resolve } from "path";
 import initRoutes from "./routes";
 import { initPrisma } from "./services/prisma";
+import { winLogger } from "./helpers/logger";
 
 import * as dotenv from "dotenv";
 dotenv.config({ path: resolve(__dirname, "..", ".env") });
 
 const main = async () => {
+  const logger = winLogger();
   const PORT = +(process.env.PORT ?? 4000);
 
   const app = express();
@@ -47,7 +49,7 @@ const main = async () => {
           return done(new Error("Wrong password"));
         else return done(null, user);
       } catch (err) {
-        console.error(err);
+        logger.error(err);
         done(err);
       }
     })
@@ -72,7 +74,7 @@ const main = async () => {
 
         return done(null, user);
       } catch (err) {
-        console.error(err);
+        logger.error(err);
         return done(err);
       }
     }
@@ -81,7 +83,7 @@ const main = async () => {
   initRoutes(app);
 
   app.listen(PORT, () => {
-    console.log(`Listening on port ${PORT}`);
+    logger.info(`Listening on port ${PORT}`);
   });
 };
 

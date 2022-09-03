@@ -1,11 +1,13 @@
+import { MaritalStatus } from "@prisma/client";
 import { Router } from "express";
+import { winLogger } from "../helpers/logger";
 import { normalizeArabic } from "../helpers/normalizeArabic";
+import { validatePhoneNumber } from "../helpers/validatePhoneNumber";
 import { authenticate } from "../services/auth";
 import { initPrisma } from "../services/prisma";
-import { MaritalStatus } from "@prisma/client";
-import { validatePhoneNumber } from "../helpers/validatePhoneNumber";
 
 const router = Router();
+const logger = winLogger();
 
 router.get("/", authenticate, async (req, res) => {
   const query: {
@@ -101,7 +103,7 @@ router.post("/insert", authenticate, async (req, res) => {
 
     res.send(insertedOfficer);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -148,7 +150,7 @@ router.put("/update", authenticate, async (req, res) => {
 
     res.send(updatedOfficer);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -190,7 +192,7 @@ router.put("/add-phone", authenticate, async (req, res) => {
 
     res.send(updatedOfficer);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -225,7 +227,7 @@ router.delete("/delete-phone", authenticate, async (req, res) => {
 
     res.send(deletedPhoneNumbers);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).send(err);
   }
 });

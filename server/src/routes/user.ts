@@ -1,9 +1,11 @@
 import bcrypt from "bcrypt";
 import { Router } from "express";
-import { initPrisma } from "../services/prisma";
 import passport from "passport";
+import { winLogger } from "../helpers/logger";
+import { initPrisma } from "../services/prisma";
 
 const router = Router();
+const logger = winLogger();
 
 router.post("/signup", async (req, res) => {
   const { username, password } = req.body;
@@ -18,12 +20,14 @@ router.post("/signup", async (req, res) => {
 
     const prisma = initPrisma();
 
-    await prisma.user.create({
+    const createdUser = await prisma.user.create({
       data: {
         username,
         password: hashedPassword,
       },
     });
+
+    logger.info(`User ${createdUser.username} created`);
 
     res.status(200).send("User created");
   } catch (err) {
@@ -50,6 +54,7 @@ router.post(
           username,
         },
         select: {
+          username: true,
           password: true,
         },
       });
@@ -66,12 +71,14 @@ router.post(
         return;
       }
 
+      logger.info(`User ${user.username} logged in`);
+
       req.session.save((err) => {
         if (err) next(err);
         res.status(200).send("User logged in");
       });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).send(err);
     }
   }

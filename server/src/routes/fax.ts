@@ -5,7 +5,9 @@ import multer from "multer";
 import { resolve } from "path";
 import { Fax, OfficersFaxes } from "@prisma/client";
 import { writeFile, mkdir } from "fs/promises";
+import { winLogger } from "../helpers/logger";
 
+const logger = winLogger();
 const router = Router();
 
 const uploadBase = process.env.UPLOAD_BASE ?? "./uploads";
@@ -53,6 +55,7 @@ router.post("/create-appointments", authenticate, async (req, res) => {
 
     res.send(createdAppointments);
   } catch (err) {
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -90,6 +93,7 @@ router.put("/inform", authenticate, async (req, res) => {
 
     res.send(updatedAppointment);
   } catch (err) {
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -127,6 +131,7 @@ router.put("/followup", authenticate, async (req, res) => {
 
     res.send(updatedAppointment);
   } catch (err) {
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -155,6 +160,7 @@ router.put("/archive", authenticate, async (req, res) => {
 
     res.send(archivedFax);
   } catch (err) {
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -205,12 +211,13 @@ router.post(
 
           return createdFax;
         } catch (err) {
-          res.status(500).send(err);
+          throw err;
         }
       });
 
       res.send(insertedFax);
     } catch (err) {
+      logger.error(err);
       res.status(500).send(err);
     }
   }
