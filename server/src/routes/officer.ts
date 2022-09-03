@@ -37,6 +37,7 @@ router.get("/", authenticate, async (req, res) => {
 
     res.send(officers);
   } catch (err) {
+    logger.error(err);
     res.status(500).send(err);
   }
 });

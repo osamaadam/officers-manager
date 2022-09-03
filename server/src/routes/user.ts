@@ -31,6 +31,7 @@ router.post("/signup", async (req, res) => {
 
     res.status(200).send("User created");
   } catch (err) {
+    logger.error(err);
     res.status(500).send(err);
   }
 });
@@ -87,6 +88,7 @@ router.post(
 router.get("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
+      logger.error(err);
       res.status(500).send(err);
     } else {
       res.status(200).send("User logged out");

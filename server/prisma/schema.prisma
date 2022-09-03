@@ -28,7 +28,10 @@ enum ElhaaDestination {
 enum AbsenceType {
   VACATION
   MISSION
+  VACATIONEXTENSION
+  MISSIONEXTENSION
   VACATIONPLUSMISSION
+  VACATIONPLUSMISSIONEXTENSION
   SICK
   TRAVELING
   DAWRAHATMEYA
@@ -51,11 +54,11 @@ model User {
 model Officer {
   id             Int             @id @default(autoincrement())
   name           String
-  normalizedName String
+  normalizedName String          @map("normalizedName")
   aqdameya       Int?
   repetition     Int             @default(0)
   profession     String?
-  militaryNo     Int?
+  militaryNo     Int?            @map("militaryNo")
   dofaa          String?
   rankId         Int
   rank           Rank            @relation(fields: [rankId], references: [id])
@@ -67,7 +70,7 @@ model Officer {
   workdate       DateTime?
   promotiondate  DateTime?
   phone          Phone[]
-  nationalNo     String?
+  nationalNo     String?         @map("nationalNo")
   address        String?
   maritalStatus  MaritalStatus?
   numOfChildren  Int?
@@ -136,7 +139,7 @@ model OfficersFaxes {
   followupUser   User?     @relation("follower", fields: [followupUserId], references: [id])
   notes          String?
   User           User?     @relation(fields: [userId], references: [id])
-  userId         Int?
+  userId         Int?      @map("userId")
 
   @@id([officerId, faxId])
 }
@@ -146,8 +149,8 @@ model Absence {
   absenceType AbsenceType @default(VACATION)
   officerId   Int
   officer     Officer     @relation(fields: [officerId], references: [id])
-  startDate   DateTime
-  endDate     DateTime?
+  startDate   DateTime    @map("startDate")
+  endDate     DateTime?   @map("endDate")
   notes       String?
   userId      Int
   user        User        @relation(fields: [userId], references: [id])
