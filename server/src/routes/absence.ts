@@ -56,7 +56,6 @@ router.post("/insert", authenticate, async (req, res) => {
   const user = req.user as { id: number; username: string };
 
   try {
-    console.log(absence);
     const createdAbsence = await prisma.absence.create({
       data: {
         startDate: new Date(absence.startDate),

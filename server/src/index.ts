@@ -8,6 +8,7 @@ import { resolve } from "path";
 import initRoutes from "./routes";
 import { initPrisma } from "./services/prisma";
 import { winLogger } from "./helpers/logger";
+import cors from "cors";
 
 import * as dotenv from "dotenv";
 dotenv.config({ path: resolve(__dirname, "..", ".env") });
@@ -18,6 +19,12 @@ const main = async () => {
 
   const app = express();
 
+  app.use(
+    cors({
+      origin: true,
+      credentials: true,
+    })
+  );
   app.use(json());
   app.use(cookieParser());
   app.use(

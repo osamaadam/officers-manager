@@ -3,6 +3,7 @@ import { Router } from "express";
 import passport from "passport";
 import { winLogger } from "../helpers/logger";
 import { initPrisma } from "../services/prisma";
+import { authenticate } from "../services/auth";
 
 const router = Router();
 const logger = winLogger();
@@ -76,7 +77,10 @@ router.post(
 
       req.session.save((err) => {
         if (err) next(err);
-        res.status(200).send("User logged in");
+        res.send({
+          ...user,
+          password: undefined,
+        });
       });
     } catch (err) {
       logger.error(err);
@@ -85,7 +89,7 @@ router.post(
   }
 );
 
-router.get("/logout", (req, res) => {
+router.get("/logout", authenticate, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       logger.error(err);
@@ -93,6 +97,13 @@ router.get("/logout", (req, res) => {
     } else {
       res.status(200).send("User logged out");
     }
+  });
+});
+
+router.get("/me", authenticate, (req, res) => {
+  res.send({
+    ...req.user,
+    password: undefined,
   });
 });
 
